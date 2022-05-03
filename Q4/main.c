@@ -149,6 +149,9 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
+	if (factor < -20 || factor>20) {
+		return;
+	}
 	int gread = 0;
 	int index = 0;
 	for (int i = 0; i < numberOfStudents; i++) {
@@ -160,9 +163,19 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 					index++;
 				}
 				gread += factor;
-				strcpy(students[i][j + 1], gread);
-				printf("%c", students[i][j + 1]);
-				
+				if (gread >= 100) {
+					students[i][j + 1] = "100";
+				}
+				else
+				if (gread <=0) {
+					students[i][j + 1] = "0";
+				}
+				else {
+					students[i][j + 1][0] = 48 + (gread / 10);
+					students[i][j + 1][1] = 48 + (gread % 10);
+				}
+				gread = 0;
+				index = 0;
 			}
 		}
   }
@@ -184,7 +197,13 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+	FILE* f = fopen("studentList1.txt", "w");
+	if (f == NULL) { exit(1); }
+	for (int i = 0; i < numberOfStudents; i++) {
+		for (int j = 0; j < coursesPerStudent[i]; j++) {
+
+		}
+	}
 }
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
