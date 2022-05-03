@@ -52,8 +52,8 @@ int main()
 	//add code to free all arrays of struct Student
 
 
-	/*_CrtDumpMemoryLeaks();*/ //uncomment this block to check for heap memory allocation leaks.
-	// Read https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
+	_CrtDumpMemoryLeaks();  //uncomment this block to check for heap memory allocation leaks.
+   // Read https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
 
 	return 0;
 }
@@ -62,29 +62,32 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 {
 	FILE* f=fopen("studentList.txt", "r");
 	if (f == NULL) { exit(1); }
-	int numOfRow = 0;
+	int numOfRow = 1;
 	int numOfCurse = 0;
 	char ch;
-	while (feof(f)) {
+
+	while (!feof(f)) {
 		ch = fgetc(f);
 		if (ch == '\n')
 			numOfRow++;
 	}
+	*numberOfStudents = numOfRow;
 	rewind(f);
-
-	coursesPerStudent = (int**)malloc(sizeof(int*));
-	if (coursesPerStudent == NULL) { printf("allocation failde"); exit(1); }
+	int*numC = (int*)malloc(sizeof(int)*(*numberOfStudents));
+	if (numC == NULL) { printf("allocation failde"); exit(1); }
 	ch = fgetc(f);
 	for (int i = 0; i < numOfRow; i++) {
-		while (ch != '\n') {
+		while (ch != '\n'&&!feof(f)) {
 			if (ch == '|')
 				numOfCurse++;
 			ch = fgetc(f);
 		}
-		coursesPerStudent[i] = (int*)malloc(sizeof(int));
-		if (coursesPerStudent == NULL) { printf("allocation failde"); exit(1); }
-		*coursesPerStudent[i] = numOfCurse;
-		numOfCurse = 0;
+		ch = fgetc(f);
+		numC[i] = (int*)malloc(sizeof(int));
+		if (numC == NULL) { printf("allocation failde"); exit(1); }
+		numC[i] = numOfCurse;
+		coursesPerStudent[i] = (numC+i);
+			numOfCurse = 0;
 	}
 	fclose(f);
 }
@@ -105,20 +108,64 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 {
 	countStudentsAndCourses(fileName, coursesPerStudent, numberOfStudents);
 	FILE* f = fopen("studentList.txt", "r");
+	int count = 0;
+	char ch;
 	if (f == NULL) { exit(1); }
 	char*** arrayS = (char***)malloc(sizeof(char**) *(*numberOfStudents) );
 	if (arrayS == NULL) { printf("alloction failde\n"); exit(1); }
 	for (int i = 0; i < *numberOfStudents; i++) {
 		arrayS[i] = (char**)malloc(sizeof(char*) * (1 + 2 * sizeof(*coursesPerStudent[i])));
 		if(arrayS[i]==NULL){ printf("alloction failde\n"); exit(1); }
-
+		ch = fgetc(f);
+		for (int j = 0; j < (1 + 2 * (*coursesPerStudent[i])); j++) {
+			while (ch != '|' && ch != ',' && ch != '\n') {
+				count++;
+				ch = fgetc(f);
+			}
+			arrayS[i][j] = (char*)malloc(sizeof(char) * (1 + count));
+			if (arrayS[i][j] == NULL) { exit(1); }
+			count = 0;
+		}
 	}
-
+	rewind(f);
+	ch = fgetc(f);
+	int index = 0;
+	for (int i = 0; i < *numberOfStudents; i++) {
+		for (int j = 0; j < (1+2*(*coursesPerStudent[i])); j++) {
+			while (ch != '|' && ch != ',' && ch != '\n'&&!feof(f)) {
+				arrayS[i][j][index] = ch;
+				index++;
+				ch = fgetc(f);
+			}
+			arrayS[i][j][index] ='\0';
+			index = 0;
+			ch = fgetc(f);
+		}
+	}
+	fclose(f);
+	
+	return arrayS;
 }
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
 {
-	//add code here
+	int gread = 0;
+	int index = 0;
+	for (int i = 0; i < numberOfStudents; i++) {
+		for (int j = 0; j < 1 + 2 * coursesPerStudent[i];j++) {
+			if (strcmp(students[i][j], courseName)==0) {
+				while (*(students[i][j + 1]+index) != '\0') {
+					gread *= 10;
+					gread += *(students[i][j + 1]+index) - 48;
+					index++;
+				}
+				gread += factor;
+				strcpy(students[i][j + 1], gread);
+				printf("%c", students[i][j + 1]);
+				
+			}
+		}
+  }
 }
 
 void printStudentArray(const char* const* const* students, const int* coursesPerStudent, int numberOfStudents)
