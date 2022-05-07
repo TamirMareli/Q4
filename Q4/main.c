@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define SIZE 35
 
 typedef struct StudentCourseGrade
 {
@@ -42,7 +43,7 @@ int main()
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
-	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	//Part B
 	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -52,7 +53,7 @@ int main()
 	//add code to free all arrays of struct Student
 
 
-	_CrtDumpMemoryLeaks();  //uncomment this block to check for heap memory allocation leaks.
+	//CrtDumpMemoryLeaks();  //uncomment this block to check for heap memory allocation leaks.
    // Read https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
 
 	return 0;
@@ -100,6 +101,7 @@ int countPipes(const char* lineBuffer, int maxCount, char terminator)
 	for (int i = 0; i < maxCount; i++) {
 		if (lineBuffer[i] == '\0') { return count; }
 		if (lineBuffer[i] == '|') { count++; }
+
 	}
 	return count;
 }
@@ -200,23 +202,81 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 	FILE* f = fopen("studentList1.txt", "w");
 	if (f == NULL) { exit(1); }
 	for (int i = 0; i < numberOfStudents; i++) {
-		for (int j = 0; j < coursesPerStudent[i]; j++) {
-
+		fprintf(f, "%s", "name: ");
+		fprintf(f, "%s\n", students[i][0]);
+		fprintf(f, "%s", "*********\n");
+		for (int j = 1; j < (1+2*coursesPerStudent[i]); j+=2) {
+			fprintf(f, "%s", "course: ");
+			fprintf(f, "%s\n", students[i][j]);
+			fprintf(f, "%s", "grade: ");
+			fprintf(f, "%s\n\n", students[i][j+1]);
 		}
 	}
+	/*char* ptr  = NULL;
+	char** pptr = NULL;
+	for (int i = 0; i < numberOfStudents; i++) {
+		for (int j = 0; j < coursesPerStudent[i]; j++) {
+			ptr = students[i];
+			free(ptr);
+		}
+		pptr = students[i];
+		free(pptr);
+	}*/
+	fclose(f);
 }
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
 {
-	//add code here
+	FILE* f = fopen(fileName, "wb");
+	if (f == NULL) { exit(1); }
+	fwrite(&numberOfStudents, sizeof(int), 1, f);
+	for (int i = 0; i < numberOfStudents; i++) {
+		fwrite(students[i].name, SIZE*sizeof(char), 1, f);
+		fwrite(&students[i].numberOfCourses,sizeof(int), 1, f);
+		fwrite(students[i].grades,sizeof(StudentCourseGrade), students[i].numberOfCourses, f);
+	}
+	fclose(f);
 }
 
 Student* readFromBinFile(const char* fileName)
 {
-	//add code here
+	FILE* f = fopen(fileName, "rb");
+	if (f == NULL) { exit(1); }
+	int  numberOfStudents;
+	fread(&numberOfStudents, sizeof(int), 1, f);
+	Student* s = (Student*)malloc(sizeof(Student) * numberOfStudents);
+	if (s == NULL) { exit(1); }
+	for (int i = 0; i < numberOfStudents; i++) {
+		fread(s[i].name, sizeof(char), SIZE, f);
+		fread(&s[i].numberOfCourses, sizeof(int), 1, f);
+		s[i].grades = (StudentCourseGrade*)malloc(sizeof(StudentCourseGrade) * s[i].numberOfCourses);
+		if (s[i].grades == NULL) { exit(1); }
+
+	    fread((s[i].grades), sizeof(StudentCourseGrade), s[i].numberOfCourses, f);
+	
+		}
+	fclose(f);
+	return s;
+
 }
 
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+	int temp = 0;
+	Student* s = (Student*)malloc(sizeof(Student)*numberOfStudents);
+	if (s == NULL) { exit(1); }
+
+	for (int i = 0; i < numberOfStudents; i++) {
+		strcpy(s[i].name, students[i][0]);
+		s[i].numberOfCourses = coursesPerStudent[i];
+		s[i].grades = (StudentCourseGrade*)malloc(sizeof(StudentCourseGrade)*s[i].numberOfCourses);
+		if (s[i].grades == NULL) { exit(1); }
+		for (int j = 1; j < s[i].numberOfCourses; j+=2) {
+			strcpy(s[i].grades->courseName, students[i][j]);
+			temp = atoi(students[i][j + 1]);
+			s[i].grades->grade = temp;
+		}
+	}
+	return s;
+
 }

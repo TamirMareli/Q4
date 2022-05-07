@@ -1,0 +1,69 @@
+name: Avi
+*********
+course: Linear Algebra
+grade: 84
+
+course: Complexity Theory
+grade: 99
+
+course: Infi 1
+grade: 88
+
+course: Discrete Mathematics
+grade: 73
+
+course: Data Structures
+grade: 100
+
+name: Yarden
+*********
+course: Discrete Mathematics
+grade: 87
+
+course: Advanced Topics in C
+grade: 95
+
+name: Sivan
+*********
+course: Advanced Topics in C
+grade: 100
+
+course: Algorithms
+grade: 84
+
+name: Tal
+*********
+course: Infi 2
+grade: 97
+
+name: Erez
+*********
+course: Digital Systems
+grade: 76
+
+name: Shalom
+*********
+course: Algorithms
+grade: 100
+
+course: Complex Functions
+grade: 80
+
+course: Data Structures
+grade: 87
+
+name: Ronit
+*********
+course: Data Structures
+grade: 99
+
+name: Yehuda
+*********
+course: Complexity Theory
+grade: 88
+
+name: Vardit
+*********
+course: Complex Functions
+grade: 76
+
