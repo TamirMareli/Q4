@@ -49,8 +49,11 @@ int main()
 	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
 	writeToBinFile("students.bin", transformedStudents, numberOfStudents);
 	Student* testReadStudents = readFromBinFile("students.bin");
-
-	//add code to free all arrays of struct Student
+	for (int i = 0; i < numberOfStudents; i++) {
+		free(testReadStudents[i].grades);
+	}
+	free(testReadStudents);
+	
 
 
 	//CrtDumpMemoryLeaks();  //uncomment this block to check for heap memory allocation leaks.
@@ -116,7 +119,7 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 	char*** arrayS = (char***)malloc(sizeof(char**) *(*numberOfStudents) );
 	if (arrayS == NULL) { printf("alloction failde\n"); exit(1); }
 	for (int i = 0; i < *numberOfStudents; i++) {
-		arrayS[i] = (char**)malloc(sizeof(char*) * (1 + 2 * sizeof(*coursesPerStudent[i])));
+		arrayS[i] = (char**)malloc(sizeof(char*) * (1 + 2 * sizeof(*(coursesPerStudent[i]))));
 		if(arrayS[i]==NULL){ printf("alloction failde\n"); exit(1); }
 		ch = fgetc(f);
 		for (int j = 0; j < (1 + 2 * (*coursesPerStudent[i])); j++) {
@@ -212,16 +215,13 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 			fprintf(f, "%s\n\n", students[i][j+1]);
 		}
 	}
-	/*char* ptr  = NULL;
-	char** pptr = NULL;
+/*
 	for (int i = 0; i < numberOfStudents; i++) {
-		for (int j = 0; j < coursesPerStudent[i]; j++) {
-			ptr = students[i];
-			free(ptr);
-		}
-		pptr = students[i];
-		free(pptr);
-	}*/
+		//for(int j=0;j<1+2*(*coursesPerStudent);j++)
+		free(students[i][0]);
+	}
+	free(students);
+	*/
 	fclose(f);
 }
 
@@ -232,7 +232,7 @@ void writeToBinFile(const char* fileName, Student* students, int numberOfStudent
 	fwrite(&numberOfStudents, sizeof(int), 1, f);
 	for (int i = 0; i < numberOfStudents; i++) {
 		fwrite(students[i].name, SIZE*sizeof(char), 1, f);
-		fwrite(&students[i].numberOfCourses,sizeof(int), 1, f);
+		fwrite(&(students[i].numberOfCourses),sizeof(int), 1, f);
 		fwrite(students[i].grades,sizeof(StudentCourseGrade), students[i].numberOfCourses, f);
 	}
 	fclose(f);
